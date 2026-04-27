@@ -1173,8 +1173,6 @@ function openEditModal(idx){
     // استخراج كميات الإفطار من النص
     const lines = (o.items||'').split('\n').map(l=>l.replace(/^[•\s]+/,'').trim()).filter(Boolean);
     lines.forEach(line=>{
-      // تجاهل عناوين الأقسام (تنتهي بـ : وتبدأ بإيموجي)
-      if(line.endsWith(':') || line.match(/^[🍳🥙🍮🥗☕🫖]\s/)) return;
       // الكمية قد تكون "×2" أو "(20 علبة) ×2" أو "×2 (unit)"
       const qtyMatch = line.match(/[×x]\s*(\d+)/);
       const qty = qtyMatch ? parseInt(qtyMatch[1]) : 1;
@@ -1412,14 +1410,11 @@ function saveEditedOrder(){
   const govSel = document.getElementById('edit-gov').value;
   const govOther = (document.getElementById('edit-gov-other')||{}).value||'';
   const gov = govSel==='أخرى'?(govOther||'أخرى'):govSel;
-  const guestsEl = document.getElementById('edit-guests');
-  const guestsSel = guestsEl ? guestsEl.value : '';
+  const guestsSel = document.getElementById('edit-guests').value;
   const guestsCustom = (document.getElementById('edit-guests-custom')||{}).value||'';
   let guests = guestsSel==='custom'?(guestsCustom||guestsSel):guestsSel;
-  const priceEl = document.getElementById('edit-price');
-  const price = priceEl ? priceEl.value.trim() : (o.priceAdj||'');
-  const notesEl = document.getElementById('edit-notes');
-  const notes = notesEl ? notesEl.value.trim() : (o.extras||'');
+  const price = document.getElementById('edit-price').value.trim();
+  const notes = document.getElementById('edit-notes').value.trim();
   const dayName = date ? DAYS_ARR[new Date(date+'T12:00:00').getDay()] : o.dayName;
   const isBreakfast = o.meal === 'ريوق';
 
@@ -1451,7 +1446,6 @@ function saveEditedOrder(){
   o.name=name; o.phone=phone; o.eventDate=date; o.dayName=dayName;
   o.gov=gov; o.guests=guests; o.priceAdj=price; o.extras=notes;
   if(itemsText) o.items=itemsText;
-  // إذا إفطار وكل الكميات صفر - ابق على الأصناف القديمة (لا تمسح)
 
   // حفظ في الشيت - POST مثل باقي الدوال
   const saveData = {
