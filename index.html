@@ -522,11 +522,12 @@ function saveDelivery(idx){
 
 function sendInvoiceWhatsApp(idx){
   const o=allOrders[idx];
-  const total=(parseFloat(o.price||0)+parseFloat(o.delivery||0)).toFixed(3);
+  const effectivePrice=parseFloat(o.priceAdj||o.price||0);
+  const total=(effectivePrice+parseFloat(o.delivery||0)).toFixed(3);
   const remaining=o.deposit?(parseFloat(total)-parseFloat(o.deposit)).toFixed(3)+' ر.ع':'—';
   let msg=`🌟 *فاتورة دل باستا*\n━━━━━━━━━━━━━━\n🔖 رقم الطلب: *#${o.orderNum}*\n\n`;
   msg+=`👤 ${o.name}\n📱 ${o.phone}\n🍽️ ${o.meal}\n📅 ${o.dayName||''} ${o.eventDate}\n📍 ${o.gov}\n👥 ${o.guests} شخص\n\n`;
-  msg+=`━━━━━━━━━━━━━━\n💰 إجمالي الباقة: *${o.price} ر.ع*\n`;
+  msg+=`━━━━━━━━━━━━━━\n💰 إجمالي الباقة: *${effectivePrice.toFixed(3)} ر.ع*\n`;
   if(o.delivery) msg+=`🚚 التوصيل: *${parseFloat(o.delivery).toFixed(3)} ر.ع*\n`;
   msg+=`📊 الإجمالي: *${total} ر.ع*\n`;
   if(o.deposit) msg+=`✅ العربون: *${parseFloat(o.deposit).toFixed(3)} ر.ع*\n`;
@@ -564,7 +565,8 @@ async function updateStatus(idx,status){
 function printInvoice(idx){
   const o=allOrders[idx];
   const items=(o.items||'').replace(/\n/g,'<br>');
-  const total=(parseFloat(o.price||0)+parseFloat(o.delivery||0)).toFixed(3);
+  const effectivePrice=parseFloat(o.priceAdj||o.price||0);
+  const total=(effectivePrice+parseFloat(o.delivery||0)).toFixed(3);
   const remaining=o.deposit?(parseFloat(total)-parseFloat(o.deposit)).toFixed(3)+' ر.ع':'—';
   const issueDate=new Date().toLocaleDateString('ar-OM',{day:'2-digit',month:'long',year:'numeric'});
   const bookDate=(o.timestamp||'').split('T')[0]||(o.timestamp||'').split(' ')[0]||'—';
@@ -671,7 +673,8 @@ function buildIngrTable(items) {
 // --- SEND INVOICE PDF ---
 function sendInvoicePDF(idx){
   const o=allOrders[idx];
-  const total=(parseFloat(o.price||0)+parseFloat(o.delivery||0)).toFixed(3);
+  const effectivePrice=parseFloat(o.priceAdj||o.price||0);
+  const total=(effectivePrice+parseFloat(o.delivery||0)).toFixed(3);
   const remaining=o.deposit?(parseFloat(total)-parseFloat(o.deposit)).toFixed(3):'—';
   const mealEn={ريوق:'Breakfast',غداء:'Lunch',عشاء:'Dinner'};
   const issueDate=new Date().toLocaleDateString('en-GB',{day:'2-digit',month:'long',year:'numeric'});
@@ -776,7 +779,8 @@ function sendInvoicePDF(idx){
       <div>Thank you for choosing Del Pasta 🌟<br>شكراً لاختياركم دل باستا</div>
       <div style="text-align:right;">Del Pasta | Since 2018<br>دل باستا | منذ 2018</div>
     </div>
-    <div class="no-print"><button onclick="window.print()" style="padding:10px 28px;background:#D4913A;border:none;border-radius:8px;font-size:14px;font-weight:700;color:#fff;cursor:pointer;font-family:Cairo,sans-serif;">🖨️ Print</button><button onclick="window.close()" style="padding:10px 24px;background:#eee;border:none;border-radius:8px;font-size:14px;cursor:pointer;">Close</button></div>
+    <div class="no-print"><button onclick="window.print()" style="padding:10px 28px;background:#D4913A;border:none;border-radius:8px;font-size:14px;font-weight:700;color:#fff;cursor:pointer;font-family:Cairo,sans-serif;">💾 حفظ PDF</button><button onclick="window.close()" style="padding:10px 24px;background:#eee;border:none;border-radius:8px;font-size:14px;cursor:pointer;">إغلاق</button></div>
+    <div class="no-print" style="margin-top:8px;font-size:11px;color:#999;text-align:center;">اختر "Save as PDF" من قائمة الطباعة لحفظ الفاتورة</div>
   </div></body></html>`);
   printWin.document.close();
   setTimeout(()=>printWin.focus(),300);
@@ -1173,6 +1177,8 @@ function openEditModal(idx){
     // استخراج كميات الإفطار من النص
     const lines = (o.items||'').split('\n').map(l=>l.replace(/^[•\s]+/,'').trim()).filter(Boolean);
     lines.forEach(line=>{
+      // تجاهل عناوين الأقسام (تنتهي بـ : وتبدأ بإيموجي)
+      if(line.endsWith(':') || line.match(/^[🍳🥙🍮🥗☕🫖]\s/)) return;
       // الكمية قد تكون "×2" أو "(20 علبة) ×2" أو "×2 (unit)"
       const qtyMatch = line.match(/[×x]\s*(\d+)/);
       const qty = qtyMatch ? parseInt(qtyMatch[1]) : 1;
@@ -1410,11 +1416,14 @@ function saveEditedOrder(){
   const govSel = document.getElementById('edit-gov').value;
   const govOther = (document.getElementById('edit-gov-other')||{}).value||'';
   const gov = govSel==='أخرى'?(govOther||'أخرى'):govSel;
-  const guestsSel = document.getElementById('edit-guests').value;
+  const guestsEl = document.getElementById('edit-guests');
+  const guestsSel = guestsEl ? guestsEl.value : '';
   const guestsCustom = (document.getElementById('edit-guests-custom')||{}).value||'';
   let guests = guestsSel==='custom'?(guestsCustom||guestsSel):guestsSel;
-  const price = document.getElementById('edit-price').value.trim();
-  const notes = document.getElementById('edit-notes').value.trim();
+  const priceEl = document.getElementById('edit-price');
+  const price = priceEl ? priceEl.value.trim() : (o.priceAdj||'');
+  const notesEl = document.getElementById('edit-notes');
+  const notes = notesEl ? notesEl.value.trim() : (o.extras||'');
   const dayName = date ? DAYS_ARR[new Date(date+'T12:00:00').getDay()] : o.dayName;
   const isBreakfast = o.meal === 'ريوق';
 
@@ -1446,6 +1455,7 @@ function saveEditedOrder(){
   o.name=name; o.phone=phone; o.eventDate=date; o.dayName=dayName;
   o.gov=gov; o.guests=guests; o.priceAdj=price; o.extras=notes;
   if(itemsText) o.items=itemsText;
+  // إذا إفطار وكل الكميات صفر - ابق على الأصناف القديمة (لا تمسح)
 
   // حفظ في الشيت - POST مثل باقي الدوال
   const saveData = {
