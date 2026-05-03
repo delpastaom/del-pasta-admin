@@ -813,7 +813,9 @@ function sendInvoicePDF(idx){
 }
 // --- PRINT KITCHEN (EN) ---
 function printKitchenBreakfast(idx){
+  try{
   const o = allOrders[idx];
+  if(!o){ showToast('⚠️ لم يتم العثور على الطلب','error'); return; }
   const dayMapEn2 = {'الأحد':'Sunday','الاثنين':'Monday','الثلاثاء':'Tuesday','الأربعاء':'Wednesday','الخميس':'Thursday','الجمعة':'Friday','السبت':'Saturday'};
   const dayEn2 = dayMapEn2[o.dayName]||o.dayName||'';
 
@@ -935,10 +937,13 @@ function printKitchenBreakfast(idx){
     +'</div>';
 
   showKitchenOverlay(kitchenHTML2);
+  }catch(err){ showToast('⚠️ خطأ في تحميل ورقة المطبخ: '+err.message,'error'); }
 }
 
 function printKitchen(idx){
+  try{
   const o=allOrders[idx];
+  if(!o){ showToast('⚠️ لم يتم العثور على الطلب','error'); return; }
   if(o.meal==='ريوق'){ printKitchenBreakfast(idx); return; }
   const mealEn={ريوق:'Breakfast',غداء:'Lunch',عشاء:'Dinner'};
   const gN=parseInt((o.guests||'').split('-')[1]||(o.guests||'').split('-')[0])||'?';
@@ -1028,6 +1033,7 @@ function printKitchen(idx){
     </div>`;
 
   showKitchenOverlay(kitchenHTML);
+  }catch(err){ showToast('⚠️ خطأ في تحميل ورقة المطبخ: '+err.message,'error'); }
 }
 // --- CALENDAR ---
 function changeMonth(dir){
@@ -1474,22 +1480,28 @@ function saveEditedOrder(){
 
   // حفظ في الشيت - POST مثل باقي الدوال
   const saveData = {
-    action: 'updateOrder',
     orderNum: o.orderNum,
     name, phone, eventDate: date, dayName, gov, guests, price,
     items: itemsText||o.items,
     extras: notes
   };
-  fetch(SHEET_URL, {
+
+  const saveBtn = document.querySelector('#edit-modal-actions button');
+  if(saveBtn){ saveBtn.disabled=true; saveBtn.textContent='⏳ جارٍ الحفظ...'; }
+
+  fetch(SHEET_URL+'?action=updateOrder', {
     method:'POST',
     mode:'no-cors',
     headers:{'Content-Type':'application/json'},
     body: JSON.stringify(saveData)
-  }).catch(()=>{});
-
-  renderOrders(); updateStats();
-  closeEditModal();
-  alert('✅ تم حفظ التعديلات بنجاح');
+  }).then(function(){
+    renderOrders(); updateStats();
+    closeEditModal();
+    showToast('✅ تم حفظ التعديلات بنجاح', 'success');
+  }).catch(function(){
+    if(saveBtn){ saveBtn.disabled=false; saveBtn.textContent='💾 حفظ التعديلات'; }
+    showToast('⚠️ حدث خطأ في الاتصال، حاول مرة أخرى', 'error');
+  });
 }
 
 function closeKitchenOverlay(){
@@ -1500,18 +1512,24 @@ function closeKitchenOverlay(){
 
 function printKitchenSheet(){
   var html = window._kitchenPrintHTML||'';
-  var frame = document.getElementById('kitchenFrame');
-  var doc = frame.contentDocument || frame.contentWindow.document;
-  doc.open();
-  doc.write('<!DOCTYPE html><html><head><meta charset="UTF-8">'
+  var win = window.open('','_blank','width=900,height=700');
+  if(!win){
+    alert('يرجى السماح بالنوافذ المنبثقة لهذا الموقع ثم حاول مجدداً');
+    return;
+  }
+  win.document.write('<!DOCTYPE html><html><head><meta charset="UTF-8">'
     +'<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">'
     +'<style>*{box-sizing:border-box;margin:0;padding:0;}body{font-family:Arial,sans-serif;background:#fff;padding:14px;font-size:11px;}</style>'
     +'</head><body>'+html+'</body></html>');
-  doc.close();
+  win.document.close();
+  win.onload = function(){
+    win.focus();
+    win.print();
+    setTimeout(function(){ if(!win.closed) win.close(); }, 2000);
+  };
   setTimeout(function(){
-    frame.contentWindow.focus();
-    frame.contentWindow.print();
-  },500);
+    if(!win.closed){ win.focus(); win.print(); }
+  }, 1500);
 }
 
 function showKitchenOverlay(html){
@@ -1519,6 +1537,20 @@ function showKitchenOverlay(html){
   document.getElementById('kitchenContent').innerHTML = html;
   document.getElementById('kitchenOverlay').style.display = 'block';
   document.body.style.overflow = 'hidden';
+}
+
+function showToast(msg, type){
+  var el = document.getElementById('toast-msg');
+  if(!el) return;
+  el.textContent = msg;
+  el.style.background = type==='error' ? '#C0392B' : '#2D8B5F';
+  el.style.display = 'block';
+  el.style.opacity = '1';
+  clearTimeout(window._toastTimer);
+  window._toastTimer = setTimeout(function(){
+    el.style.opacity = '0';
+    setTimeout(function(){ el.style.display='none'; el.style.opacity='1'; }, 300);
+  }, 3000);
 }
 </script>
 
@@ -1535,6 +1567,9 @@ function showKitchenOverlay(html){
     <div id="kitchenContent"></div>
   </div>
 </div>
-<iframe id="kitchenFrame" style="display:none;width:1px;height:1px;border:none;position:fixed;left:-9999px;top:0;"></iframe>
+
+<!-- TOAST NOTIFICATION -->
+<div id="toast-msg" style="display:none;position:fixed;bottom:28px;left:50%;transform:translateX(-50%);padding:12px 24px;border-radius:12px;font-family:Cairo,sans-serif;font-size:14px;font-weight:700;color:#fff;z-index:9999;box-shadow:0 4px 20px rgba(0,0,0,.25);transition:opacity .3s;"></div>
+
 </body>
 </html>
