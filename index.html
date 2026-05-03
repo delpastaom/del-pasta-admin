@@ -522,11 +522,12 @@ function saveDelivery(idx){
 
 function sendInvoiceWhatsApp(idx){
   const o=allOrders[idx];
-  const total=(parseFloat(o.price||0)+parseFloat(o.delivery||0)).toFixed(3);
+  const basePrice=parseFloat(o.priceAdj||o.price||0);
+  const total=(basePrice+parseFloat(o.delivery||0)).toFixed(3);
   const remaining=o.deposit?(parseFloat(total)-parseFloat(o.deposit)).toFixed(3)+' ر.ع':'—';
   let msg=`🌟 *فاتورة دل باستا*\n━━━━━━━━━━━━━━\n🔖 رقم الطلب: *#${o.orderNum}*\n\n`;
   msg+=`👤 ${o.name}\n📱 ${o.phone}\n🍽️ ${o.meal}\n📅 ${o.dayName||''} ${o.eventDate}\n📍 ${o.gov}\n👥 ${o.guests} شخص\n\n`;
-  msg+=`━━━━━━━━━━━━━━\n💰 إجمالي الباقة: *${o.price} ر.ع*\n`;
+  msg+=`━━━━━━━━━━━━━━\n💰 إجمالي الباقة: *${basePrice.toFixed(3)} ر.ع*\n`;
   if(o.delivery) msg+=`🚚 التوصيل: *${parseFloat(o.delivery).toFixed(3)} ر.ع*\n`;
   msg+=`📊 الإجمالي: *${total} ر.ع*\n`;
   if(o.deposit) msg+=`✅ العربون: *${parseFloat(o.deposit).toFixed(3)} ر.ع*\n`;
@@ -564,7 +565,8 @@ async function updateStatus(idx,status){
 function printInvoice(idx){
   const o=allOrders[idx];
   const items=(o.items||'').replace(/\n/g,'<br>');
-  const total=(parseFloat(o.price||0)+parseFloat(o.delivery||0)).toFixed(3);
+  const basePrice=parseFloat(o.priceAdj||o.price||0);
+  const total=(basePrice+parseFloat(o.delivery||0)).toFixed(3);
   const remaining=o.deposit?(parseFloat(total)-parseFloat(o.deposit)).toFixed(3)+' ر.ع':'—';
   const issueDate=new Date().toLocaleDateString('ar-OM',{day:'2-digit',month:'long',year:'numeric'});
   const bookDate=(o.timestamp||'').split('T')[0]||(o.timestamp||'').split(' ')[0]||'—';
@@ -686,7 +688,8 @@ function buildIngrTable(items) {
 // --- SEND INVOICE PDF ---
 function sendInvoicePDF(idx){
   const o=allOrders[idx];
-  const total=(parseFloat(o.price||0)+parseFloat(o.delivery||0)).toFixed(3);
+  const basePrice=parseFloat(o.priceAdj||o.price||0);
+  const total=(basePrice+parseFloat(o.delivery||0)).toFixed(3);
   const remaining=o.deposit?(parseFloat(total)-parseFloat(o.deposit)).toFixed(3):'—';
   const mealEn={ريوق:'Breakfast',غداء:'Lunch',عشاء:'Dinner'};
   const issueDate=new Date().toLocaleDateString('en-GB',{day:'2-digit',month:'long',year:'numeric'});
