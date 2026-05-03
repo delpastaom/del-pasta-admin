@@ -1479,22 +1479,25 @@ function saveEditedOrder(){
   if(itemsText) o.items=itemsText;
 
   // حفظ في الشيت - POST مثل باقي الدوال
-  const saveData = {
-    orderNum: o.orderNum,
-    name, phone, eventDate: date, dayName, gov, guests, price,
-    items: itemsText||o.items,
-    extras: notes
-  };
+  const params = new URLSearchParams({
+    action:    'updateOrder',
+    orderNum:  o.orderNum,
+    name:      name      || '',
+    phone:     phone     || '',
+    eventDate: date      || '',
+    dayName:   dayName   || '',
+    gov:       gov       || '',
+    guests:    guests    || '',
+    price:     price     || '',
+    items:     itemsText || o.items || '',
+    extras:    notes     || ''
+  });
 
   const saveBtn = document.querySelector('#edit-modal-actions button');
   if(saveBtn){ saveBtn.disabled=true; saveBtn.textContent='⏳ جارٍ الحفظ...'; }
 
-  fetch(SHEET_URL+'?action=updateOrder', {
-    method:'POST',
-    mode:'no-cors',
-    headers:{'Content-Type':'application/json'},
-    body: JSON.stringify(saveData)
-  }).then(function(){
+  fetch(SHEET_URL + '?' + params.toString(), { mode:'no-cors' })
+  .then(function(){
     renderOrders(); updateStats();
     closeEditModal();
     showToast('✅ تم حفظ التعديلات بنجاح', 'success');
