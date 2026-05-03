@@ -1194,6 +1194,9 @@ let editSel = {main:[],app:[],sal:[],des:[],drk:[]};
 function openEditModal(idx){
   editIdx = idx;
   const o = allOrders[idx];
+  // إعادة تعيين زر الحفظ في حال بقي مجمّداً من مرة سابقة
+  const saveBtn = document.querySelector('#edit-modal-actions button');
+  if(saveBtn){ saveBtn.disabled=false; saveBtn.textContent='💾 حفظ التعديلات'; }
   const isBreakfast = o.meal === 'ريوق';
 
   // استخراج الأصناف الحالية
@@ -1311,13 +1314,42 @@ function renderEditModal(){
   document.getElementById('edit-modal-body').innerHTML = html;
 }
 
+function saveEditFormValues(){
+  return {
+    name:         (document.getElementById('edit-name')||{}).value,
+    phone:        (document.getElementById('edit-phone')||{}).value,
+    date:         (document.getElementById('edit-date')||{}).value,
+    gov:          (document.getElementById('edit-gov')||{}).value,
+    govOther:     (document.getElementById('edit-gov-other')||{}).value,
+    guests:       (document.getElementById('edit-guests')||{}).value,
+    guestsCustom: (document.getElementById('edit-guests-custom')||{}).value,
+    price:        (document.getElementById('edit-price')||{}).value,
+    notes:        (document.getElementById('edit-notes')||{}).value,
+  };
+}
+function restoreEditFormValues(v){
+  if(!v) return;
+  var fields = {
+    'edit-name': v.name, 'edit-phone': v.phone, 'edit-date': v.date,
+    'edit-gov': v.gov, 'edit-gov-other': v.govOther,
+    'edit-guests': v.guests, 'edit-guests-custom': v.guestsCustom,
+    'edit-price': v.price, 'edit-notes': v.notes
+  };
+  Object.keys(fields).forEach(function(id){
+    var el = document.getElementById(id);
+    if(el && fields[id] !== undefined) el.value = fields[id];
+  });
+}
+
 function toggleEdit(grp, i){
   if(grp==='drk'){ editSel[grp]=[i]; }
   else {
     if(editSel[grp].includes(i)) editSel[grp]=editSel[grp].filter(x=>x!==i);
     else editSel[grp].push(i);
   }
+  var saved = saveEditFormValues();
   renderEditModal();
+  restoreEditFormValues(saved);
 }
 
 function checkEditGovOther(){
