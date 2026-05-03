@@ -1467,76 +1467,65 @@ function saveEditedOrder(){
   if(editIdx<0) return;
   const o = allOrders[editIdx];
 
-  const name = document.getElementById('edit-name').value.trim();
-  const phone = document.getElementById('edit-phone').value.trim();
-  const date = document.getElementById('edit-date').value;
-  const govSel = document.getElementById('edit-gov').value;
+  const name     = document.getElementById('edit-name').value.trim();
+  const phone    = document.getElementById('edit-phone').value.trim();
+  const date     = document.getElementById('edit-date').value;
+  const govSel   = document.getElementById('edit-gov').value;
   const govOther = (document.getElementById('edit-gov-other')||{}).value||'';
-  const gov = govSel==='أخرى'?(govOther||'أخرى'):govSel;
-  const guestsSel = document.getElementById('edit-guests').value;
+  const gov      = govSel==='أخرى'?(govOther||'أخرى'):govSel;
+  const guestsSel    = document.getElementById('edit-guests').value;
   const guestsCustom = (document.getElementById('edit-guests-custom')||{}).value||'';
-  let guests = guestsSel==='custom'?(guestsCustom||guestsSel):guestsSel;
+  let guests  = guestsSel==='custom'?(guestsCustom||guestsSel):guestsSel;
   const price = document.getElementById('edit-price').value.trim();
   const notes = document.getElementById('edit-notes').value.trim();
-  const dayName = date ? DAYS_ARR[new Date(date+'T12:00:00').getDay()] : o.dayName;
+  const dayName    = date ? DAYS_ARR[new Date(date+'T12:00:00').getDay()] : o.dayName;
   const isBreakfast = o.meal === 'ريوق';
 
-  // بناء نص الأصناف
   let itemsText = '';
   if(isBreakfast){
-    // أصناف الإفطار
     Object.keys(BRKF_MENUS).forEach(cat=>{
       const catItems = [];
       BRKF_MENUS[cat].items.forEach((item,i)=>{
         const qty = brkfEditQty[cat+'_'+i]||0;
-        if(qty>0) catItems.push(`• ${item.name} ×${qty}`);
+        if(qty>0) catItems.push('• '+item.name+' ×'+qty);
       });
       if(catItems.length) itemsText += BRKF_MENUS[cat].label+':\n'+catItems.join('\n')+'\n\n';
     });
-    // عدد المعازيم من حقل الإفطار
     const brkfGuests = document.getElementById('edit-brkf-guests');
     if(brkfGuests && brkfGuests.value) guests = brkfGuests.value;
   } else {
-    if(editSel.main.length) itemsText += '🍖 الرئيسية:\n'+editSel.main.map(i=>'• '+EDIT_MENUS.main.items[i]).join('\n')+'\n\n';
-    if(editSel.app.length) itemsText += '🥙 الخفايف:\n'+editSel.app.map(i=>'• '+EDIT_MENUS.app.items[i]).join('\n')+'\n\n';
-    if(editSel.sal.length) itemsText += '🥗 السلطات:\n'+editSel.sal.map(i=>'• '+EDIT_MENUS.sal.items[i]).join('\n')+'\n\n';
-    if(editSel.des.length) itemsText += '🍮 الحلويات:\n'+editSel.des.map(i=>'• '+EDIT_MENUS.des.items[i]).join('\n')+'\n\n';
-    if(editSel.drk.length) itemsText += '🥤 المشروبات:\n'+editSel.drk.map(i=>'• '+EDIT_MENUS.drk.items[i]).join('\n');
+    if(editSel.main.length) itemsText += '🍖 الرئيسية:\n'+editSel.main.map(function(i){return '• '+EDIT_MENUS.main.items[i];}).join('\n')+'\n\n';
+    if(editSel.app.length)  itemsText += '🥙 الخفايف:\n'+editSel.app.map(function(i){return '• '+EDIT_MENUS.app.items[i];}).join('\n')+'\n\n';
+    if(editSel.sal.length)  itemsText += '🥗 السلطات:\n'+editSel.sal.map(function(i){return '• '+EDIT_MENUS.sal.items[i];}).join('\n')+'\n\n';
+    if(editSel.des.length)  itemsText += '🍮 الحلويات:\n'+editSel.des.map(function(i){return '• '+EDIT_MENUS.des.items[i];}).join('\n')+'\n\n';
+    if(editSel.drk.length)  itemsText += '🥤 المشروبات:\n'+editSel.drk.map(function(i){return '• '+EDIT_MENUS.drk.items[i];}).join('\n');
   }
   itemsText = itemsText.trim();
 
-  // تحديث محلي
+  // ① تحديث محلي فوري
   o.name=name; o.phone=phone; o.eventDate=date; o.dayName=dayName;
   o.gov=gov; o.guests=guests; o.priceAdj=price; o.extras=notes;
   if(itemsText) o.items=itemsText;
 
-  // حفظ في الشيت - POST مثل باقي الدوال
-  const params = new URLSearchParams({
-    action:    'updateOrder',
-    orderNum:  o.orderNum,
-    name:      name      || '',
-    phone:     phone     || '',
-    eventDate: date      || '',
-    dayName:   dayName   || '',
-    gov:       gov       || '',
-    guests:    guests    || '',
-    price:     price     || '',
-    items:     itemsText || o.items || '',
-    extras:    notes     || ''
-  });
+  // ② أغلق المودال وحدّث الواجهة فوراً — بدون انتظار الشبكة
+  renderOrders(); updateStats();
+  closeEditModal();
+  showToast('✅ تم حفظ التعديلات', 'success');
 
-  const saveBtn = document.querySelector('#edit-modal-actions button');
-  if(saveBtn){ saveBtn.disabled=true; saveBtn.textContent='⏳ جارٍ الحفظ...'; }
-
-  fetch(SHEET_URL + '?' + params.toString(), { mode:'no-cors' })
-  .then(function(){
-    renderOrders(); updateStats();
-    closeEditModal();
-    showToast('✅ تم حفظ التعديلات بنجاح', 'success');
-  }).catch(function(){
-    if(saveBtn){ saveBtn.disabled=false; saveBtn.textContent='💾 حفظ التعديلات'; }
-    showToast('⚠️ حدث خطأ في الاتصال، حاول مرة أخرى', 'error');
-  });
+  // ③ أرسل للشيت في الخلفية
+  var url = SHEET_URL
+    + '?action=updateOrder'
+    + '&orderNum='  + encodeURIComponent(o.orderNum)
+    + '&name='      + encodeURIComponent(name)
+    + '&phone='     + encodeURIComponent(phone)
+    + '&eventDate=' + encodeURIComponent(date||'')
+    + '&dayName='   + encodeURIComponent(dayName||'')
+    + '&gov='       + encodeURIComponent(gov||'')
+    + '&guests='    + encodeURIComponent(guests||'')
+    + '&price='     + encodeURIComponent(price||'')
+    + '&extras='    + encodeURIComponent(notes||'')
+    + '&items='     + encodeURIComponent(itemsText||o.items||'');
+  fetch(url, {mode:'no-cors'}).catch(function(){});
 }
 
 function closeKitchenOverlay(){
