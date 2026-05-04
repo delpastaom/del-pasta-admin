@@ -270,14 +270,14 @@ tr:hover td{background:var(--brand-pale);}
 
 <!-- EDIT ORDER MODAL -->
 <div class="modal-overlay" id="editModal" onclick="if(event.target===this)closeEditModal()" style="z-index:1100;">
-  <div class="modal" style="max-width:720px;">
-    <div class="modal-head" style="background:linear-gradient(135deg,var(--brand-dark),var(--brand));border-radius:20px 20px 0 0;">
+  <div class="modal" style="max-width:720px;display:flex;flex-direction:column;max-height:90vh;overflow:hidden;">
+    <div class="modal-head" style="background:linear-gradient(135deg,var(--brand-dark),var(--brand));border-radius:20px 20px 0 0;flex-shrink:0;">
       <h3 id="edit-modal-title" style="color:#fff;">✏️ تعديل الطلب</h3>
       <button class="modal-close" onclick="closeEditModal()" style="border-color:rgba(255,255,255,.3);color:#fff;">×</button>
     </div>
-    <div class="modal-body" id="edit-modal-body" style="padding:20px;max-height:60vh;overflow-y:auto;"></div>
-    <div class="modal-actions" id="edit-modal-actions" style="padding:14px 20px;border-top:1.5px solid var(--border);display:flex;gap:8px;flex-wrap:wrap;">
-      <button onclick="saveEditedOrder()" style="flex:2;padding:14px;background:var(--brand);border:none;border-radius:10px;font-family:Cairo,sans-serif;font-size:15px;font-weight:900;color:#fff;cursor:pointer;position:relative;z-index:10;">💾 حفظ التعديلات</button>
+    <div class="modal-body" id="edit-modal-body" style="padding:20px;flex:1;overflow-y:auto;"></div>
+    <div class="modal-actions" id="edit-modal-actions" style="padding:14px 20px;border-top:1.5px solid var(--border);display:flex;gap:8px;flex-wrap:wrap;flex-shrink:0;background:#fff;border-radius:0 0 20px 20px;">
+      <button onclick="saveEditedOrder()" style="flex:2;padding:14px;background:var(--brand);border:none;border-radius:10px;font-family:Cairo,sans-serif;font-size:15px;font-weight:900;color:#fff;cursor:pointer;">💾 حفظ التعديلات</button>
       <button onclick="closeEditModal()" style="flex:1;padding:12px;background:#f0f0f0;border:none;border-radius:10px;font-family:Cairo,sans-serif;font-size:13px;color:#666;cursor:pointer;">إلغاء</button>
     </div>
   </div>
@@ -365,7 +365,7 @@ function renderOrders(){
       <td>${o.phone}</td><td>${o.meal}</td>
       <td style="white-space:nowrap;">${o.dayName||''} ${o.eventDate}</td>
       <td>${o.gov}</td><td>${o.guests} شخص</td>
-      <td style="color:var(--brand);font-weight:800;">${o.price} ر.ع</td>
+      <td style="color:var(--brand);font-weight:800;">${o.priceAdj||o.price} ر.ع</td>
       <td style="color:#2D8B5F;font-weight:700;">${o.delivery||'—'}</td>
       <td style="color:var(--yellow);font-weight:700;">${o.deposit||'—'}</td>
       <td>${badgeMap[o.status]||o.status}</td>
