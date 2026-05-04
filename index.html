@@ -1515,7 +1515,7 @@ function saveEditedOrder(){
   closeEditModal();
   showToast('✅ تم حفظ التعديلات', 'success');
 
-  // ③ أرسل للشيت في الخلفية
+  // ③ أرسل للشيت في الخلفية وأعد تحميل البيانات للتأكد
   var url = SHEET_URL
     + '?action=updateOrder'
     + '&orderNum='  + encodeURIComponent(o.orderNum)
@@ -1528,7 +1528,20 @@ function saveEditedOrder(){
     + '&price='     + encodeURIComponent(price||'')
     + '&extras='    + encodeURIComponent(notes||'')
     + '&items='     + encodeURIComponent(itemsText||o.items||'');
-  fetch(url, {mode:'no-cors'}).catch(function(){});
+  fetch(url)
+    .then(function(r){ return r.json(); })
+    .then(function(){
+      // أعد تحميل البيانات من الشيت بعد ثانيتين للتأكد من الحفظ
+      setTimeout(function(){
+        fetch(SHEET_URL+'?action=getOrders&t='+Date.now())
+          .then(function(r){ return r.json(); })
+          .then(function(data){
+            var fresh = (data.orders||[]).filter(function(x){ return x.orderNum&&x.name&&x.phone; });
+            if(fresh.length){ allOrders=fresh; renderOrders(); updateStats(); }
+          }).catch(function(){});
+      }, 2000);
+    })
+    .catch(function(){});
 }
 
 function closeKitchenOverlay(){
