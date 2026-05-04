@@ -373,6 +373,7 @@ function renderOrders(){
         <button class="abtn abtn-view" onclick="viewOrder(${idx})">عرض</button>
         ${o.status!=='مؤكد'&&o.status!=='منجز'?`<button class="abtn abtn-confirm" onclick="updateStatus(${idx},'مؤكد')">تأكيد</button>`:''}
         ${o.status==='مؤكد'?`<button class="abtn abtn-done" onclick="updateStatus(${idx},'منجز')">منجز</button>`:''}
+        ${o.status==='منجز'?`<button class="abtn" style="background:#FEF5E0;color:#D4850A;border:1.5px solid #D4850A;" onclick="updateStatus(${idx},'مؤكد')">↩ تراجع</button>`:''}
         ${o.status!=='ملغي'&&o.status!=='منجز'?`<button class="abtn abtn-cancel" onclick="updateStatus(${idx},'ملغي')">إلغاء</button>`:''}
         <button class="abtn abtn-print" onclick="printInvoice(${idx})">🖨️</button>
         <button class="abtn" style="background:#EAF4FB;color:#2471A3;" onclick="sendInvoicePDF(${idx})">📄</button>
@@ -471,6 +472,8 @@ function viewOrder(idx){
     acts+=`<button class="mabtn mabtn-confirm" onclick="updateStatus(${idx},'مؤكد');closeModal()">✅ تأكيد</button>`;
   if(o.status==='مؤكد')
     acts+=`<button class="mabtn mabtn-done" onclick="updateStatus(${idx},'منجز');closeModal()">🎉 إنجاز</button>`;
+  if(o.status==='منجز')
+    acts+=`<button class="mabtn" style="background:#FEF5E0;color:#D4850A;border:1.5px solid #D4850A;" onclick="updateStatus(${idx},'مؤكد');closeModal()">↩ تراجع عن الإنجاز</button>`;
   if(o.status!=='ملغي'&&o.status!=='منجز')
     acts+=`<button class="mabtn mabtn-cancel" onclick="updateStatus(${idx},'ملغي');closeModal()">❌ إلغاء</button>`;
   document.getElementById('modal-actions').innerHTML=acts;
@@ -553,6 +556,9 @@ function closeModal(){document.getElementById('orderModal').classList.remove('sh
 
 // --- STATUS ---
 async function updateStatus(idx,status){
+  if(status==='منجز'){
+    if(!confirm('هل أنت متأكدة من إنجاز هذا الطلب؟\n\nاضغطي "موافق" للتأكيد أو "إلغاء" للتراجع.')) return;
+  }
   allOrders[idx].status=status;
   renderOrders(); updateStats(); renderCalendar();
   try{
