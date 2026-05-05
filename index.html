@@ -369,7 +369,7 @@ function renderOrders(){
       <td style="white-space:nowrap;">${o.dayName||''} ${o.eventDate}</td>
       <td>${o.gov}</td><td>${o.guests} شخص</td>
       <td style="color:var(--brand);font-weight:800;">${o.priceAdj||o.price} ر.ع</td>
-      <td style="color:#2D8B5F;font-weight:700;">${o.delivery||'—'}</td>
+      <td style="color:#2D8B5F;font-weight:700;">${(o.delivery&&!String(o.delivery).includes('T'))?o.delivery:'—'}</td>
       <td style="color:var(--yellow);font-weight:700;">${o.deposit||'—'}</td>
       <td>${badgeMap[o.status]||o.status}</td>
       <td><div class="action-btns">
