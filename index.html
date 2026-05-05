@@ -357,11 +357,14 @@ function renderOrders(){
     <th>رقم الطلب</th><th>الاسم</th><th>الجوال</th><th>الوجبة</th>
     <th>تاريخ المناسبة</th><th>الولاية</th><th>الضيوف</th><th>السعر</th><th>التوصيل</th><th>العربون</th><th>الحالة</th><th>إجراءات</th>
   </tr></thead><tbody>`;
+  const todayStr = new Date().toISOString().split('T')[0];
   list.forEach(o=>{
     const idx=allOrders.indexOf(o);
-    html+=`<tr>
+    const isAlert = o.status==='مؤكد' && o.eventDate && o.eventDate>=todayStr;
+    const rowStyle = isAlert ? 'background:linear-gradient(90deg,#FFF8DC 0%,#fff 60%);border-right:4px solid #F39C12;' : '';
+    html+=`<tr style="${rowStyle}">
       <td style="color:var(--brand);font-weight:700;font-size:11px;">${o.orderNum}</td>
-      <td style="font-weight:700;color:var(--text);">${o.name}</td>
+      <td style="font-weight:700;color:var(--text);">${isAlert?'🔔 ':''} ${o.name}</td>
       <td>${o.phone}</td><td>${o.meal}</td>
       <td style="white-space:nowrap;">${o.dayName||''} ${o.eventDate}</td>
       <td>${o.gov}</td><td>${o.guests} شخص</td>
