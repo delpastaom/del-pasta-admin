@@ -1482,9 +1482,10 @@ function saveEditedOrder(){
   const govSel   = document.getElementById('edit-gov').value;
   const govOther = (document.getElementById('edit-gov-other')||{}).value||'';
   const gov      = govSel==='أخرى'?(govOther||'أخرى'):govSel;
-  const guestsSel    = document.getElementById('edit-guests').value;
+  const guestsEl     = document.getElementById('edit-guests');
+  const guestsSel    = guestsEl ? guestsEl.value : 'custom';
   const guestsCustom = (document.getElementById('edit-guests-custom')||{}).value||'';
-  let guests  = guestsSel==='custom'?(guestsCustom||guestsSel):guestsSel;
+  let guests  = guestsSel==='custom'?(guestsCustom||o.guests):guestsSel;
   const price = document.getElementById('edit-price').value.trim();
   const notes = document.getElementById('edit-notes').value.trim();
   const dayName    = date ? DAYS_ARR[new Date(date+'T12:00:00').getDay()] : o.dayName;
