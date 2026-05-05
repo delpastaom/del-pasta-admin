@@ -484,11 +484,10 @@ function savePriceAdj(idx){
   const val=document.getElementById('priceadj-input').value.trim();
   if(!val) return;
   allOrders[idx].priceAdj=val;
-  // تحديث الإجمالي في المودال فوراً
   const totalEl=document.getElementById('modal-total');
   if(totalEl) totalEl.textContent=(parseFloat(val||allOrders[idx].price||0)+parseFloat(allOrders[idx].delivery||0)).toFixed(3)+' ر.ع';
   renderOrders();
-  try{ fetch(SHEET_URL+'?action=updatePrice',{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify({orderNum:allOrders[idx].orderNum,price:val})}); }catch(e){}
+  fetch(SHEET_URL+'?action=updateOrder&orderNum='+encodeURIComponent(allOrders[idx].orderNum)+'&price='+encodeURIComponent(val),{mode:'no-cors'}).catch(function(){});
   const btn=document.getElementById('priceadj-btn');
   if(btn){btn.textContent='✓ تم';btn.style.background='var(--green)';setTimeout(()=>{btn.textContent='حفظ';btn.style.background='#6A1B9A';},2000);}
 }
@@ -496,7 +495,7 @@ function savePriceAdj(idx){
 function saveExtras(idx){
   const val=document.getElementById('extras-input').value.trim();
   allOrders[idx].extras=val;
-  try{ fetch(SHEET_URL+'?action=updateExtras',{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify({orderNum:allOrders[idx].orderNum,extras:val})}); }catch(e){}
+  fetch(SHEET_URL+'?action=updateOrder&orderNum='+encodeURIComponent(allOrders[idx].orderNum)+'&extras='+encodeURIComponent(val),{mode:'no-cors'}).catch(function(){});
   const btn=document.getElementById('extras-btn');
   if(btn){btn.textContent='✓ تم';btn.style.background='var(--green)';setTimeout(()=>{btn.textContent='حفظ';btn.style.background='#E65100';},2000);}
 }
@@ -507,20 +506,20 @@ function clearPriceAdj(idx){
   const totalEl=document.getElementById('modal-total');
   if(totalEl) totalEl.textContent=(parseFloat(allOrders[idx].price||0)+parseFloat(allOrders[idx].delivery||0)).toFixed(3)+' ر.ع';
   renderOrders();
-  try{ fetch(SHEET_URL+'?action=updatePrice',{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify({orderNum:allOrders[idx].orderNum,price:''})}); }catch(e){}
+  fetch(SHEET_URL+'?action=updateOrder&orderNum='+encodeURIComponent(allOrders[idx].orderNum)+'&price=',{mode:'no-cors'}).catch(function(){});
 }
 
 function clearExtras(idx){
   allOrders[idx].extras='';
   document.getElementById('extras-input').value='';
-  try{ fetch(SHEET_URL+'?action=updateExtras',{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify({orderNum:allOrders[idx].orderNum,extras:''})}); }catch(e){}
+  fetch(SHEET_URL+'?action=updateOrder&orderNum='+encodeURIComponent(allOrders[idx].orderNum)+'&extras=',{mode:'no-cors'}).catch(function(){});
 }
 
 function saveDelivery(idx){
   const val=document.getElementById('delivery-input').value.trim();
   allOrders[idx].delivery=val;
   renderOrders(); updateStats();
-  try{ fetch(SHEET_URL+'?action=updateDelivery',{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify({orderNum:allOrders[idx].orderNum,delivery:val})}); }catch(e){}
+  fetch(SHEET_URL+'?action=updateOrder&orderNum='+encodeURIComponent(allOrders[idx].orderNum)+'&delivery='+encodeURIComponent(val),{mode:'no-cors'}).catch(function(){});
 }
 
 function sendInvoiceWhatsApp(idx){
@@ -543,11 +542,7 @@ function saveDeposit(idx){
   const val=document.getElementById('deposit-input').value.trim();
   allOrders[idx].deposit=val;
   renderOrders();
-  try{
-    fetch(SHEET_URL+'?action=updateDeposit',{method:'POST',mode:'no-cors',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({orderNum:allOrders[idx].orderNum,deposit:val})});
-  }catch(e){}
+  fetch(SHEET_URL+'?action=updateOrder&orderNum='+encodeURIComponent(allOrders[idx].orderNum)+'&deposit='+encodeURIComponent(val),{mode:'no-cors'}).catch(function(){});
   const btn=document.querySelector('.deposit-row button');
   if(btn){btn.textContent='✓';btn.style.background='var(--green)';}
 }
