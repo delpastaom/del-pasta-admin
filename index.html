@@ -222,6 +222,7 @@ tr:hover td{background:var(--brand-pale);}
               <button class="filter-btn" onclick="filterOrders('منجز',this)">منجز</button>
               <button class="filter-btn" onclick="filterOrders('ملغي',this)">ملغي</button>
             </div>
+            <button onclick="openAddOrderModal()" style="background:var(--brand);color:#fff;border:none;border-radius:20px;padding:5px 14px;font-family:'Cairo',sans-serif;font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:4px;">➕ إضافة يدوي</button>
           </div>
         </div>
         <div id="orders-wrap">
@@ -267,6 +268,73 @@ tr:hover td{background:var(--brand-pale);}
   </div>
 </div>
 
+
+<!-- ADD ORDER MANUAL MODAL -->
+<div class="modal-overlay" id="addOrderModal" onclick="if(event.target===this)closeAddModal()" style="z-index:1200;">
+  <div class="modal" style="max-width:600px;display:flex;flex-direction:column;max-height:92vh;overflow:hidden;">
+    <div class="modal-head" style="background:linear-gradient(135deg,#1a5c3a,#2D8B5F);border-radius:20px 20px 0 0;flex-shrink:0;">
+      <h3 style="color:#fff;">➕ إضافة طلب يدوي</h3>
+      <button class="modal-close" onclick="closeAddModal()" style="border-color:rgba(255,255,255,.3);color:#fff;">×</button>
+    </div>
+    <div style="padding:20px;flex:1;overflow-y:auto;">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <div>
+          <label style="font-size:12px;font-weight:700;color:var(--text2);display:block;margin-bottom:4px;">الاسم <span style="color:var(--brand)">*</span></label>
+          <input id="ao-name" type="text" style="width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;font-family:'Cairo',sans-serif;font-size:13px;outline:none;" placeholder="اسم الزبون">
+        </div>
+        <div>
+          <label style="font-size:12px;font-weight:700;color:var(--text2);display:block;margin-bottom:4px;">الهاتف <span style="color:var(--brand)">*</span></label>
+          <input id="ao-phone" type="text" style="width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;font-family:'Cairo',sans-serif;font-size:13px;outline:none;" placeholder="968XXXXXXXX">
+        </div>
+        <div>
+          <label style="font-size:12px;font-weight:700;color:var(--text2);display:block;margin-bottom:4px;">نوع الوجبة <span style="color:var(--brand)">*</span></label>
+          <select id="ao-meal" style="width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;font-family:'Cairo',sans-serif;font-size:13px;outline:none;background:#fff;">
+            <option value="">اختر...</option>
+            <option value="ريوق">🌅 ريوق (إفطار)</option>
+            <option value="غداء">☀️ غداء</option>
+            <option value="عشاء">🌙 عشاء</option>
+          </select>
+        </div>
+        <div>
+          <label style="font-size:12px;font-weight:700;color:var(--text2);display:block;margin-bottom:4px;">تاريخ الحفل <span style="color:var(--brand)">*</span></label>
+          <input id="ao-date" type="date" style="width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;font-family:'Cairo',sans-serif;font-size:13px;outline:none;">
+        </div>
+        <div>
+          <label style="font-size:12px;font-weight:700;color:var(--text2);display:block;margin-bottom:4px;">الولاية</label>
+          <input id="ao-gov" type="text" style="width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;font-family:'Cairo',sans-serif;font-size:13px;outline:none;" placeholder="مثال: صحار">
+        </div>
+        <div>
+          <label style="font-size:12px;font-weight:700;color:var(--text2);display:block;margin-bottom:4px;">عدد الضيوف</label>
+          <input id="ao-guests" type="text" style="width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;font-family:'Cairo',sans-serif;font-size:13px;outline:none;" placeholder="مثال: 20-22">
+        </div>
+        <div>
+          <label style="font-size:12px;font-weight:700;color:var(--text2);display:block;margin-bottom:4px;">السعر (ر.ع)</label>
+          <input id="ao-price" type="text" style="width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;font-family:'Cairo',sans-serif;font-size:13px;outline:none;" placeholder="مثال: 126.000">
+        </div>
+        <div>
+          <label style="font-size:12px;font-weight:700;color:var(--text2);display:block;margin-bottom:4px;">الحالة</label>
+          <select id="ao-status" style="width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;font-family:'Cairo',sans-serif;font-size:13px;outline:none;background:#fff;">
+            <option value="جديد">⏳ معلق</option>
+            <option value="مؤكد">✅ مؤكد</option>
+          </select>
+        </div>
+      </div>
+      <div style="margin-top:12px;">
+        <label style="font-size:12px;font-weight:700;color:var(--text2);display:block;margin-bottom:4px;">الأصناف المطلوبة</label>
+        <textarea id="ao-items" rows="4" style="width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;font-family:'Cairo',sans-serif;font-size:13px;outline:none;resize:vertical;" placeholder="انسخي الأصناف من رسالة واتساب هنا..."></textarea>
+      </div>
+      <div style="margin-top:8px;">
+        <label style="font-size:12px;font-weight:700;color:var(--text2);display:block;margin-bottom:4px;">ملاحظات</label>
+        <input id="ao-notes" type="text" style="width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;font-family:'Cairo',sans-serif;font-size:13px;outline:none;" placeholder="أي ملاحظات إضافية">
+      </div>
+      <div id="ao-err" style="display:none;margin-top:10px;padding:10px;background:#FEE2E2;border-radius:8px;font-size:12px;color:#B91C1C;font-weight:600;"></div>
+    </div>
+    <div class="modal-actions" style="padding:14px 20px;border-top:1px solid var(--border);display:flex;gap:10px;flex-shrink:0;background:#fff;border-radius:0 0 20px 20px;">
+      <button onclick="saveManualOrder()" style="flex:1;background:var(--green);color:#fff;border:none;border-radius:10px;padding:12px;font-family:'Cairo',sans-serif;font-size:14px;font-weight:800;cursor:pointer;">💾 حفظ الطلب</button>
+      <button onclick="closeAddModal()" style="background:#f5f5f5;color:var(--text2);border:none;border-radius:10px;padding:12px 20px;font-family:'Cairo',sans-serif;font-size:13px;font-weight:700;cursor:pointer;">إلغاء</button>
+    </div>
+  </div>
+</div>
 
 <!-- EDIT ORDER MODAL -->
 <div class="modal-overlay" id="editModal" onclick="if(event.target===this)closeEditModal()" style="z-index:1100;">
@@ -551,6 +619,94 @@ function saveDeposit(idx){
 }
 
 function closeModal(){document.getElementById('orderModal').classList.remove('show');}
+
+// --- ADD ORDER MANUAL ---
+function openAddOrderModal(){
+  // تفريغ الحقول
+  ['ao-name','ao-phone','ao-gov','ao-price','ao-notes','ao-items'].forEach(id=>{
+    const el=document.getElementById(id); if(el) el.value='';
+  });
+  document.getElementById('ao-meal').value='';
+  document.getElementById('ao-status').value='جديد';
+  document.getElementById('ao-date').value='';
+  document.getElementById('ao-guests').value='';
+  document.getElementById('ao-err').style.display='none';
+  document.getElementById('addOrderModal').classList.add('show');
+}
+function closeAddModal(){document.getElementById('addOrderModal').classList.remove('show');}
+
+function saveManualOrder(){
+  const name=document.getElementById('ao-name').value.trim();
+  const phone=document.getElementById('ao-phone').value.trim();
+  const meal=document.getElementById('ao-meal').value;
+  const dv=document.getElementById('ao-date').value;
+  const gov=document.getElementById('ao-gov').value.trim();
+  const guests=document.getElementById('ao-guests').value.trim();
+  const price=document.getElementById('ao-price').value.trim();
+  const status=document.getElementById('ao-status').value;
+  const items=document.getElementById('ao-items').value.trim();
+  const notes=document.getElementById('ao-notes').value.trim();
+  const errEl=document.getElementById('ao-err');
+
+  if(!name||!phone||!meal||!dv){
+    errEl.textContent='الرجاء إدخال الاسم، الهاتف، نوع الوجبة، وتاريخ الحفل على الأقل.';
+    errEl.style.display='block';
+    return;
+  }
+  errEl.style.display='none';
+
+  const d=new Date(dv+'T12:00:00');
+  const dayName=DAYS_AR[d.getDay()]||'';
+  const now=new Date();
+  const timestamp=now.toLocaleString('ar-OM');
+
+  const sheetData={
+    name,phone,meal,
+    eventDate:dv,
+    dayName,
+    gov:gov||'—',
+    guests:guests||'—',
+    price:price||'—',
+    items:items||'—',
+    notes:notes||'—',
+    timestamp,
+    orderNum:'manual-'+Date.now()
+  };
+
+  const btn=document.querySelector('#addOrderModal .modal-actions button');
+  if(btn){btn.textContent='⏳ جارٍ الحفظ...';btn.disabled=true;}
+
+  fetch(SHEET_URL,{
+    method:'POST',
+    body:JSON.stringify(sheetData),
+    keepalive:true
+  })
+  .then(r=>r.json())
+  .then(data=>{
+    const finalNum=data&&data.orderNum?data.orderNum:sheetData.orderNum;
+    const newOrder={
+      orderNum:finalNum,timestamp,name,phone,meal,
+      eventDate:dv,dayName,gov:gov||'—',
+      guests:guests||'—',price:price||'—',
+      items:items||'—',status,
+      deposit:'',delivery:'',priceAdj:'',extras:notes||'—'
+    };
+    allOrders.unshift(newOrder);
+    renderOrders();updateStats();renderCalendar();
+    closeAddModal();
+    if(btn){btn.textContent='💾 حفظ الطلب';btn.disabled=false;}
+    // تحديث الحالة إذا غير جديد
+    if(status!=='جديد'){
+      const idx=allOrders.indexOf(newOrder);
+      if(idx>=0) updateStatus(idx,status);
+    }
+  })
+  .catch(()=>{
+    errEl.textContent='حدث خطأ أثناء الحفظ، حاولي مرة ثانية.';
+    errEl.style.display='block';
+    if(btn){btn.textContent='💾 حفظ الطلب';btn.disabled=false;}
+  });
+}
 
 // --- STATUS ---
 async function updateStatus(idx,status){
